@@ -10,7 +10,7 @@ import (
 const (
 	ITERATIONS   = 100000
 	HOST_PORT    = "localhost:6379"
-	CLIENT_COUNT = 2
+	CLIENT_COUNT = 50
 )
 
 func main() {
@@ -21,6 +21,8 @@ func main() {
 	var variant2 int
 	var testName string
 	var help bool
+	var ignoreErrors bool
+	var sremAfterSadd bool
 
 	flag.StringVar(&hostsPortsArg, "h", HOST_PORT, "comma-separated host:port list")
 	flag.IntVar(&iterations, "i", ITERATIONS, "iterations of the test to run - divided among clients")
@@ -29,6 +31,8 @@ func main() {
 	flag.IntVar(&variant2, "y", 1, "variant 2 - test dependent")
 	flag.StringVar(&testName, "t", "sadd", "benchmark to run")
 	flag.BoolVar(&help, "help", false, "help")
+	flag.BoolVar(&ignoreErrors, "ignore-errors", false, "ignore errors from Redis calls")
+	flag.BoolVar(&sremAfterSadd, "srem-after-sadd", false, "delete entries immediately after creation")
 
 	flag.Parse()
 
@@ -47,6 +51,8 @@ func main() {
 		ClientIterations: clientIterations,
 		Variant1:         variant1,
 		Variant2:         variant2,
+		IgnoreErrors:     ignoreErrors,
+		SremAfterSadd:    sremAfterSadd,
 	}
 
 	var benchmarker benchmark.Runner

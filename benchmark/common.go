@@ -14,6 +14,8 @@ type TestConfig struct {
 	ClientIterations int
 	Variant1         int
 	Variant2         int
+	IgnoreErrors     bool
+	SremAfterSadd    bool
 }
 
 type Runner interface {

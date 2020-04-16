@@ -8,7 +8,7 @@ import (
 )
 
 type PubSubBenchmark struct {
-	TestConfig
+	config *TestConfig
 }
 
 type Subscriber struct {
@@ -24,23 +24,15 @@ const (
 var _ Runner = (*PubSubBenchmark)(nil)
 
 func NewPubSubBenchmark(config *TestConfig) *PubSubBenchmark {
-	bm := &PubSubBenchmark{}
-	bm.HostPort = config.HostPort
-	bm.ClientCount = config.ClientCount
-	bm.Iterations = config.Iterations
-	bm.ClientIterations = config.ClientIterations
-	bm.Variant1 = config.Variant1
-	bm.Variant2 = config.Variant2
-
-	return bm
+	return &PubSubBenchmark{config}
 }
 
 func (bm *PubSubBenchmark) Launch() {
 	channelName := "benchmarkChannel"
 
-	subscribers := make([]*Subscriber, 0, bm.ClientCount)
+	subscribers := make([]*Subscriber, 0, bm.config.ClientCount)
 
-	for i := 0; i < bm.ClientCount; i++ {
+	for i := 0; i < bm.config.ClientCount; i++ {
 		// Establish connection
 		client := redis.NewClient(&redis.Options{
 			Addr: "localhost:6379",
@@ -61,7 +53,7 @@ func (bm *PubSubBenchmark) Launch() {
 		subscribers = append(subscribers, subscription)
 	}
 
-	fmt.Printf("Subscribed %d clients\n", bm.ClientCount)
+	fmt.Printf("Subscribed %d clients\n", bm.config.ClientCount)
 
 	publisher := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
@@ -81,7 +73,7 @@ func (bm *PubSubBenchmark) Launch() {
 	for r := range results {
 		if r < 0 {
 			clientsDone++
-			if clientsDone == bm.ClientCount {
+			if clientsDone == bm.config.ClientCount {
 				break
 			}
 			continue
@@ -96,7 +88,7 @@ func (bm *PubSubBenchmark) Launch() {
 	}
 
 	fmt.Println()
-	fmt.Printf("Clients: %d\n", bm.ClientCount)
+	fmt.Printf("Clients: %d\n", bm.config.ClientCount)
 	fmt.Printf("Total messages received: %d\n\n", messagesReceived)
 	printSummary(latencies)
 }
@@ -123,7 +115,7 @@ func receiveMessages(subscriber *Subscriber, results chan int) {
 }
 
 func (bm *PubSubBenchmark) publishMessages(publisher *redis.Client, channelName string) {
-	for i := 0; i < bm.ClientIterations; i++ {
+	for i := 0; i < bm.config.ClientIterations; i++ {
 		startTime := time.Now()
 		message := fmt.Sprintf("%d", startTime.UnixNano())
 		err := publisher.Publish(channelName, message).Err()
@@ -137,15 +129,6 @@ func (bm *PubSubBenchmark) publishMessages(publisher *redis.Client, channelName 
 	if err != nil {
 		panic(err)
 	}
-
-	//err := subscriber.pubsub.Unsubscribe(channelName)
-	//if err != nil {
-	//	panic(fmt.Sprintf("Unable to unsubscribe: %v", err))
-	//}
-	//err := subscriber.pubsub.Close()
-	//if err != nil {
-	//	panic(fmt.Sprintf("Unable to close channel: %v", err))
-	//}
 }
 
 func waitForSubscription(pubSub *redis.PubSub) error {
