@@ -29,7 +29,7 @@ func main() {
 	flag.IntVar(&clientCount, "c", CLIENT_COUNT, "number of clients to use")
 	flag.IntVar(&variant1, "x", 1, "variant 1 - test dependent")
 	flag.IntVar(&variant2, "y", 1, "variant 2 - test dependent")
-	flag.StringVar(&testName, "t", "sadd", "benchmark to run")
+	flag.StringVar(&testName, "t", "sadd", "benchmark to run: sadd, smembers, pubsub")
 	flag.BoolVar(&help, "help", false, "help")
 	flag.BoolVar(&ignoreErrors, "ignore-errors", false, "ignore errors from Redis calls")
 	flag.BoolVar(&sremAfterSadd, "srem-after-sadd", false, "delete entries immediately after creation")
@@ -43,6 +43,10 @@ func main() {
 	hostsPorts := strings.Split(hostsPortsArg, ",")
 
 	clientIterations := iterations / clientCount
+
+	if clientIterations == 0 {
+		clientIterations = 1
+	}
 
 	testConfig := &benchmark.TestConfig{
 		HostPort:         hostsPorts,
@@ -63,6 +67,9 @@ func main() {
 		break
 	case "pubsub":
 		benchmarker = benchmark.NewPubSubBenchmark(testConfig)
+		break
+	case "smembers":
+		benchmarker = benchmark.NewSmembersBenchmark(testConfig)
 		break
 	default:
 		panic(fmt.Sprintf("unknown test: %s", testName))
