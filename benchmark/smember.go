@@ -86,6 +86,7 @@ func (smembers *SmembersBenchmark) setupSets(client *redis.Client) {
 
 func (smembers *SmembersBenchmark) doSmembers(client *redis.Client, results chan time.Duration) {
 	randInt := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	for i := 0; i < smembers.config.ClientIterations; i++ {
 		executionStartTime := time.Now()
 

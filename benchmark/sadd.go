@@ -76,6 +76,7 @@ func (sadd *SaddBenchmark) doSadd(client *redis.Client, results chan time.Durati
 
 		key := fmt.Sprintf("mykey-%d", randInt.Intn(sadd.config.Variant1))
 		member := fmt.Sprintf("value-%d", rand.Intn(sadd.config.Variant2))
+
 		err := client.SAdd(key, member).Err()
 		if err != nil && !sadd.config.IgnoreErrors {
 			panic(err)

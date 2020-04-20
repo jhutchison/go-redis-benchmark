@@ -71,6 +71,9 @@ func main() {
 	case "smembers":
 		benchmarker = benchmark.NewSmembersBenchmark(testConfig)
 		break
+		case "del":
+		benchmarker = benchmark.NewDelBenchmark(testConfig)
+		break
 	default:
 		panic(fmt.Sprintf("unknown test: %s", testName))
 	}
